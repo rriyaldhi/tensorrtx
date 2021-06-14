@@ -118,6 +118,53 @@ class Retinaface_trt(object):
         self.bindings = bindings
 
     def infer(self, input_image_path):
+        total = 0
+        n = 1001
+        for i in range(1001):
+            threading.Thread.__init__(self)
+            # Make self the active context, pushing it on top of the context stack.
+
+            self.cfx.push()
+            # Restore
+            stream = self.stream
+            context = self.context
+            engine = self.engine
+            host_inputs = self.host_inputs
+            cuda_inputs = self.cuda_inputs
+            host_outputs = self.host_outputs
+            cuda_outputs = self.cuda_outputs
+            bindings = self.bindings
+            # Do image preprocess
+            input_image, image_raw, origin_h, origin_w = self.preprocess_image(
+                input_image_path
+            )
+            a = time.time()
+            # Copy input image to host buffer
+            np.copyto(host_inputs[0], input_image.ravel())
+            # Transfer input data  to the GPU.
+            cuda.memcpy_htod_async(cuda_inputs[0], host_inputs[0], stream)
+            # Run inference.
+            context.execute_async(bindings=bindings, stream_handle=stream.handle)
+            # Transfer predictions back from the GPU.
+            cuda.memcpy_dtoh_async(host_outputs[0], cuda_outputs[0], stream)
+            # Synchronize the stream
+            stream.synchronize()
+            # Here we use the first row of output in that batch_size = 1
+            output = host_outputs[0]
+            # Remove any context from the top of the context stack, deactivating it.
+            self.cfx.pop()
+            # Do postprocess
+            result_boxes, result_scores, result_landmark = self.post_process(
+                output, origin_h, origin_w
+            )
+            b = time.time()-a
+            print(i)
+            print(b)
+            if i > 0:
+                total += b
+        print('avg')
+        print(total / (n - 1))
+
         threading.Thread.__init__(self)
         # Make self the active context, pushing it on top of the context stack.
 
@@ -135,36 +182,25 @@ class Retinaface_trt(object):
         input_image, image_raw, origin_h, origin_w = self.preprocess_image(
             input_image_path
         )
-        total = 0
-        n = 1001
-        for i in range(1001):
-            a = time.time()
-            # Copy input image to host buffer
-            np.copyto(host_inputs[0], input_image.ravel())
-            # Transfer input data  to the GPU.
-            cuda.memcpy_htod_async(cuda_inputs[0], host_inputs[0], stream)
-            # Run inference.
-            context.execute_async(bindings=bindings, stream_handle=stream.handle)
-            # Transfer predictions back from the GPU.
-            cuda.memcpy_dtoh_async(host_outputs[0], cuda_outputs[0], stream)
-            # Synchronize the stream
-            stream.synchronize()
-            # Here we use the first row of output in that batch_size = 1
-            output = host_outputs[0]
-
-            # Do postprocess
-            result_boxes, result_scores, result_landmark = self.post_process(
-                output, origin_h, origin_w
-            )
-            b = time.time()-a
-            print(i)
-            print(b)
-            if i > 0:
-                total += b
+        a = time.time()
+        # Copy input image to host buffer
+        np.copyto(host_inputs[0], input_image.ravel())
+        # Transfer input data  to the GPU.
+        cuda.memcpy_htod_async(cuda_inputs[0], host_inputs[0], stream)
+        # Run inference.
+        context.execute_async(bindings=bindings, stream_handle=stream.handle)
+        # Transfer predictions back from the GPU.
+        cuda.memcpy_dtoh_async(host_outputs[0], cuda_outputs[0], stream)
+        # Synchronize the stream
+        stream.synchronize()
+        # Here we use the first row of output in that batch_size = 1
+        output = host_outputs[0]
         # Remove any context from the top of the context stack, deactivating it.
         self.cfx.pop()
-        print('avg')
-        print(total / (n - 1))
+        # Do postprocess
+        result_boxes, result_scores, result_landmark = self.post_process(
+            output, origin_h, origin_w
+        )
         # Draw rectangles and labels on the original image
 
         # Save image
