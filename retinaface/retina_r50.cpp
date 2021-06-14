@@ -369,7 +369,7 @@ int main(int argc, char** argv) {
         doInference(*context, data, prob, BATCH_SIZE);
         auto end = std::chrono::system_clock::now();
         std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << "us" << std::endl;
-        total += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
+        total += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     }
     std::cout << total << std::endl;
 
