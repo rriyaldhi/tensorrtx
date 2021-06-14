@@ -135,29 +135,34 @@ class Retinaface_trt(object):
         input_image, image_raw, origin_h, origin_w = self.preprocess_image(
             input_image_path
         )
-        a = time.time()
-        # Copy input image to host buffer
-        np.copyto(host_inputs[0], input_image.ravel())
-        # Transfer input data  to the GPU.
-        cuda.memcpy_htod_async(cuda_inputs[0], host_inputs[0], stream)
-        # Run inference.
-        context.execute_async(bindings=bindings, stream_handle=stream.handle)
-        # Transfer predictions back from the GPU.
-        cuda.memcpy_dtoh_async(host_outputs[0], cuda_outputs[0], stream)
-        # Synchronize the stream
-        stream.synchronize()
-        # Remove any context from the top of the context stack, deactivating it.
-        self.cfx.pop()
-        # Here we use the first row of output in that batch_size = 1
-        output = host_outputs[0]
+        total = 0
+        n = 1001
+        for i in range(1001):
+            a = time.time()
+            # Copy input image to host buffer
+            np.copyto(host_inputs[0], input_image.ravel())
+            # Transfer input data  to the GPU.
+            cuda.memcpy_htod_async(cuda_inputs[0], host_inputs[0], stream)
+            # Run inference.
+            context.execute_async(bindings=bindings, stream_handle=stream.handle)
+            # Transfer predictions back from the GPU.
+            cuda.memcpy_dtoh_async(host_outputs[0], cuda_outputs[0], stream)
+            # Synchronize the stream
+            stream.synchronize()
+            # Remove any context from the top of the context stack, deactivating it.
+            self.cfx.pop()
+            # Here we use the first row of output in that batch_size = 1
+            output = host_outputs[0]
 
-        # Do postprocess
-        result_boxes, result_scores, result_landmark = self.post_process(
-            output, origin_h, origin_w
-        )
-        b = time.time()-a
-        print(b)
-
+            # Do postprocess
+            result_boxes, result_scores, result_landmark = self.post_process(
+                output, origin_h, origin_w
+            )
+            b = time.time()-a
+            print(b)
+            if i > 0:
+                total += b
+        print(total / (n - 1))
         # Draw rectangles and labels on the original image
 
         # Save image
@@ -287,7 +292,7 @@ if __name__ == "__main__":
     engine_file_path = "build/retina_r50.engine"
 
     retinaface = Retinaface_trt(engine_file_path)
-    input_image_paths = ["zidane.jpg"]
+    input_image_paths = ["images/1.4k.jpeg"]
     for i in range(10):
         for input_image_path in input_image_paths:
             # create a new thread to do inference
