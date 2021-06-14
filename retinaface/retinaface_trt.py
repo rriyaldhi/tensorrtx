@@ -149,8 +149,6 @@ class Retinaface_trt(object):
             cuda.memcpy_dtoh_async(host_outputs[0], cuda_outputs[0], stream)
             # Synchronize the stream
             stream.synchronize()
-            # Remove any context from the top of the context stack, deactivating it.
-            self.cfx.pop()
             # Here we use the first row of output in that batch_size = 1
             output = host_outputs[0]
 
@@ -162,6 +160,8 @@ class Retinaface_trt(object):
             print(b)
             if i > 0:
                 total += b
+        # Remove any context from the top of the context stack, deactivating it.
+        self.cfx.pop()
         print(total / (n - 1))
         # Draw rectangles and labels on the original image
 
