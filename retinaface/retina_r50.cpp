@@ -371,7 +371,7 @@ int main(int argc, char** argv) {
         std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << "us" << std::endl;
         total += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     }
-    std::cout << total << std::endl;
+    std::cout << (total / n) << std::endl;
 
     for (int b = 0; b < BATCH_SIZE; b++) {
         std::vector<decodeplugin::Detection> res;
