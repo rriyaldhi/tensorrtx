@@ -157,6 +157,7 @@ class Retinaface_trt(object):
                 output, origin_h, origin_w
             )
             b = time.time()-a
+            print(i)
             print(b)
             if i > 0:
                 total += b
