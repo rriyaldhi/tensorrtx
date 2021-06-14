@@ -362,12 +362,16 @@ int main(int argc, char** argv) {
 
     // Run inference
     static float prob[BATCH_SIZE * OUTPUT_SIZE];
-    for (int cc = 0; cc < 1000; cc++) {
-    auto start = std::chrono::system_clock::now();
-    doInference(*context, data, prob, BATCH_SIZE);
-    auto end = std::chrono::system_clock::now();
-    std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << "us" << std::endl;
+    int total = 0;
+    int n = 100;
+    for (int cc = 0; cc < n; cc++) {
+        auto start = std::chrono::system_clock::now();
+        doInference(*context, data, prob, BATCH_SIZE);
+        auto end = std::chrono::system_clock::now();
+        std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << "us" << std::endl;
+        total += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
     }
+    std::cout << total << std::endl;
 
     for (int b = 0; b < BATCH_SIZE; b++) {
         std::vector<decodeplugin::Detection> res;
