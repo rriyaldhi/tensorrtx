@@ -363,7 +363,7 @@ int main(int argc, char** argv) {
     // Run inference
     static float prob[BATCH_SIZE * OUTPUT_SIZE];
     int total = 0;
-    int n = 101;
+    int n = 1001;
     for (int cc = 0; cc < n; cc++) {
         auto start = std::chrono::system_clock::now();
         doInference(*context, data, prob, BATCH_SIZE);
