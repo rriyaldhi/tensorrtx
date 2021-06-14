@@ -330,7 +330,7 @@ if __name__ == "__main__":
     engine_file_path = "build/retina_r50.engine"
 
     retinaface = Retinaface_trt(engine_file_path)
-    input_image_paths = ["images/1.hd.jpeg"]
+    input_image_paths = ["images/2.hd.jpeg"]
     for i in range(10):
         for input_image_path in input_image_paths:
             # create a new thread to do inference
