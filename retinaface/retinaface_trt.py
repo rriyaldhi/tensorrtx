@@ -119,8 +119,8 @@ class Retinaface_trt(object):
 
     def infer(self, input_image_path):
         total = 0
-        n = 201
-        for i in range(201):
+        n = 101
+        for i in range(101):
             threading.Thread.__init__(self)
             # Make self the active context, pushing it on top of the context stack.
 
