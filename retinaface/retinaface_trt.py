@@ -163,6 +163,7 @@ class Retinaface_trt(object):
                 total += b
         # Remove any context from the top of the context stack, deactivating it.
         self.cfx.pop()
+        print('avg')
         print(total / (n - 1))
         # Draw rectangles and labels on the original image
 
